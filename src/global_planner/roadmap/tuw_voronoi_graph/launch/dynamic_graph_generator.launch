@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<launch>
+    <!-- arguments -->
+    <arg name="map_inflation" default="0.0"/>
+    <arg name="segment_length" default="1.0"/>
+    <arg name="opt_crossings" default="0.2"/>
+    <arg name="opt_end_segments" default="0.2"/>
+
+    <node pkg="tuw_voronoi_graph" type="voronoi_graph_node" name="graph_generator" output="screen">
+        <param name="publish_voronoi_map_image" value="true" />
+		<param name="map_inflation" value="$(arg map_inflation)"/>
+        <param name="segment_length" value="$(arg segment_length)"/>
+        <param name="opt_crossings" value="$(arg opt_crossings)"/>
+        <param name="opt_end_segments" value="$(arg opt_end_segments)"/>
+    </node>
+</launch>

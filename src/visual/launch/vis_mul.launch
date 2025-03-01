@@ -1,0 +1,8 @@
+<launch>
+    <!-- 在rviz中显示-->
+    <node name="vis_pub" pkg="visual" type="visual.py" output="screen"/> 
+    <!-- <node name="obstacle_pcl" pkg="visual" type="obstacle_pcl.py" output="screen"/>  -->
+    <node name="vis_commu" pkg="visual" type="commu.py" output="screen"/> 
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find visual)/ASSP.rviz" required="true" output="screen" />
+
+</launch>

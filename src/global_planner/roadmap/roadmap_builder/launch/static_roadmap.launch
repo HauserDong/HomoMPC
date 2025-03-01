@@ -1,0 +1,38 @@
+<launch>
+    <!-- arguments -->
+	<arg name="map_topic" default="map"/>
+    <arg name="frontier_max_x" default="20"/>
+    <arg name="frontier_max_y" default="20"/>
+    <arg name="frontier_min_x" default="-20"/>
+    <arg name="frontier_min_y" default="-20"/>
+    <arg name="map_inflation" default="0.15"/>
+    <arg name="segment_length" default="1.0"/>
+    <arg name="opt_crossings" default="0.2"/>
+    <arg name="opt_end_segments" default="0.2"/>
+
+    <!-- Map Server -->
+    <include file="$(find tuw_voronoi_graph)/launch/map_server.launch"/>
+
+    <!-- Frontier Generator -->
+	<!-- <include file="$(find roadmap_builder)/launch/frontiers_generator.launch">
+		<arg name="frontier_max_x" value="$(arg frontier_max_x)"/>
+		<arg name="frontier_max_y" value="$(arg frontier_max_y)"/>
+		<arg name="frontier_min_x" value="$(arg frontier_min_x)"/>
+		<arg name="frontier_min_y" value="$(arg frontier_min_y)"/>
+	</include> -->
+
+    <!-- Voronoi Graph Generator -->
+    <!-- <include file="$(find tuw_voronoi_graph)/launch/dynamic_graph_generator.launch">
+		<arg name="map_inflation" value="$(arg map_inflation)"/>
+        <arg name="segment_length" value="$(arg segment_length)"/>
+        <arg name="opt_crossings" value="$(arg opt_crossings)"/>
+        <arg name="opt_end_segments" value="$(arg opt_end_segments)"/>
+	</include> -->
+
+    <!-- Roadmap Builder -->
+	<node name="roadmap_builder_node" pkg="roadmap_builder" type="roadmap_builder_node.py"
+		output="screen" respawn="true">
+		<param name="map_topic" value="$(arg map_topic)"/>
+	</node>
+
+</launch>

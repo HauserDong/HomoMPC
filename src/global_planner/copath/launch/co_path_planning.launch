@@ -1,0 +1,6 @@
+<launch>
+
+    <!-- Start Homotopic Path Planning -->
+    <node name="homo_co_path_node" pkg="copath" type="HomoCoPath.py" output="screen"/>
+
+</launch>
