@@ -1,7 +1,7 @@
 /**
  * Modified by: Hauser Dong
  * From Peking university
- * Last update: 2024.10.23
+ * Last update: 2025.03.03
  * Brief Intro: This file is partly modified from https://github.com/SimoneTinella/Path-Planning-Robot-over-Voronoi-Diagram.
 */
 

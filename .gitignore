@@ -1,0 +1,10 @@
+build
+devel
+.vscode
+.catkin_workspace
+acados_code
+random_envs
+src/local_planner/planner/scripts/Dynamic/Omnidirection/__pycache__/
+src/local_planner/planner/scripts/__pycache__/
+src/local_planner/planner/scripts/opengjkc.so
+src/global_planner/copath/scripts/generate_homotopic_path.so

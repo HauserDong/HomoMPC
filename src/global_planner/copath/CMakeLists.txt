@@ -166,7 +166,6 @@ include_directories(
 # )
 catkin_install_python(PROGRAMS
   scripts/HomoCoPath.py
-  scripts/InterAgentDist.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

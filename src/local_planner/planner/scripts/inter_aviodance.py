@@ -1,8 +1,8 @@
 ################################################################
 # 
-# Author: Mike Chen 
+# Author: Mike Chen, Hauser Dong 
 # From Peking university
-# Last update: 2023.4.7
+# Last update: 2025.03.03
 # This file is about the formulation of inter-agent collision
 #  avoidance constriants in the underlying optimization.
 # 

@@ -1,3 +1,9 @@
+/*
+ * Author: Hauser Dong
+ * From Peking university
+ * Last update: 2025.03.03
+*/
+
 #include <vector>
 #include <queue>
 #include <unordered_map>
@@ -254,28 +260,6 @@ bool AStarPlanner::Plan(PosNode* start, PosNode* target, PolygonObstacle* tmp_ob
                 start_in_passage_idx = i;
             }
         }
-
-        // if(start_in_passage_idx != -1){   
-        //     for (int i = 0; i < other_passage_time_.size(); i++){
-        //         int block_idx = -1; 
-        //         double other_passage_time_1 = other_passage_time_[i][2*start_in_passage_idx];
-        //         double other_passage_time_2 = other_passage_time_[i][2*start_in_passage_idx+1];
-        //         if (other_passage_time_1 > 0 && other_passage_time_2 > 0){
-        //             // other agent passes the passage
-        //             if (other_passage_time_1 < other_passage_time_2){
-        //                 block_idx = 2*start_in_passage_idx;
-        //             }else{
-        //                 block_idx = 2*start_in_passage_idx+1;
-        //             }
-        //         }
-        //         if (block_idx != -1){
-        //             // block the passage
-        //             PosNode* start_on_graph = start_node_->neighbor;
-
-        //         }
-
-        //     }
-        // }
         
     }
 

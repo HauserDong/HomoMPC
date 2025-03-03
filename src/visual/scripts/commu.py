@@ -1,4 +1,13 @@
 #!/usr/bin/env
+
+################################################################
+# 
+# Author: Mike Chen, Hauser Dong
+# From Peking university
+# Last update: 2025.03.03
+# 
+###############################################################
+
 from re import I
 import rospy 
 from bring_up.msg import  ExecuteTraj, CommuTraj

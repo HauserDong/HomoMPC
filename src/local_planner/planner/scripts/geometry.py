@@ -1,9 +1,17 @@
+################################################################
+# 
+# Author: Mike Chen, Hauser Dong
+# From Peking university
+# Last update: 2025.03.03
+# 
+###############################################################
+
 import time
 import numpy as np
 from numpy.core.fromnumeric import argmax
 import multiprocessing as mp
 import copy
-import opengjkc as opengjk # @@ 注意这里的 gjk用你自己生成的
+import opengjkc as opengjk 
 
 
 # definition of a line

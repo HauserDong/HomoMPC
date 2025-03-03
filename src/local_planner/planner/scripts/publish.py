@@ -1,3 +1,11 @@
+################################################################
+# 
+# Author: Mike Chen, Hauser Dong
+# From Peking university
+# Last update: 2025.03.03
+# 
+###############################################################
+
 import rospy
 from geometry_msgs.msg import PoseStamped
 import numpy as np

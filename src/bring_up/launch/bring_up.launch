@@ -1,6 +1,14 @@
 <launch>
 
     <param name="obs_env_idx" value="0"/>
+    <param name="test_mode" value="4"/>   <!-- test_mode: 0: single path planning on Voronoi graph, 1: proposed method (passage segment detection), 2: proposed method (complete passage detection), 3: proposed method (complete passage detection + pure replan), 4: proposed method (complete passage detection + replan with online replan) -->
+    <param name="average_velocity" value="0.5"/>    <!-- average_velocity: predefined average velocity of the robot -->
+    <param name="min_width_weight" value="10.0"/>    <!-- min_width_weight: cost function weight for the minimum width passed by the path -->
+    <param name="homotopy_weight" value="500.0"/>   <!-- homotopy_weight: cost function weight for the homotopy-aware part -->
+    <param name="alpha" value="-0.3"/>    <!-- alpha: tolerance factor for temporal conflict -->
+    <param name="beta" value="1.0"/>    <!-- beta:  delta_t threshold for replanning -->
+    <param name="gamma" value="1.5"/>    <!-- gamma: score threshold for replanning -->
+
 
     <!-- visualization -->
     <include file="$(find visual)/launch/vis.launch" />

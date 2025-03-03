@@ -1,3 +1,11 @@
+################################################################
+# 
+# Author: Hauser Dong
+# From Peking university
+# Last update: 2025.03.03
+# 
+###############################################################
+
 import os  
 import sys
 import copy
@@ -51,7 +59,8 @@ class HomoCoPathNode:
         self.vels = {}
         self.path_pptm_scores = {}
         self.agent_block = {}
-        self.score_threshold = 1.5
+        self.score_threshold = rospy.get_param('gamma', default=1.5)
+        self.aver_vel = rospy.get_param('average_velocity', default=0.5)
 
         # record data
         self.start_planning_time = None
@@ -64,14 +73,16 @@ class HomoCoPathNode:
         self.index = 0
         shape = SET.agent_list[0]['radius']
         ExtendWidth = np.amax(shape)+0.01
-        obs_env_idx = rospy.get_param('obs_env_idx', default=4)
+        obs_env_idx = rospy.get_param('obs_env_idx', default=0)
         self.obstacle_list, self.obstacle_list_nest = Build_ExtensionZone(SET.ini_obstacle_list[obs_env_idx],ExtendWidth)
         
         # initialize path planner
         visualize = False
-        self.alpha_eval = -1.0
-        self.alpha_plan = -0.3
-        self.homopathplanner = ghp.HomoPathPlanner(self.index, self.obstacle_list_nest, SET.map_range, SET.resolution/5, SET.test_mode, self.alpha_plan, visualize)
+        self.alpha_plan = rospy.get_param('alpha', default=-0.3)
+        self.alpha_eval = self.alpha_plan - 0.7
+        self.min_width_weight = rospy.get_param('min_width_weight', default=50.0)
+        self.homotopy_weight = rospy.get_param('homotopy_weight', default=500.0)
+        self.homopathplanner = ghp.HomoPathPlanner(self.index, self.obstacle_list_nest, SET.map_range, SET.resolution/5, SET.test_mode, self.alpha_plan, visualize, self.min_width_weight, self.homotopy_weight)
         self.whole_passage = self.homopathplanner.GetExtendedVisibilityCheck()
         
         # debug
@@ -84,64 +95,19 @@ class HomoCoPathNode:
 
         agent_idx = req.index
         new_vel = req.new_vel
-        pos = [req.pos.x, req.pos.y]
-        t = req.time
         block = req.block
 
         if self.recal_flags[agent_idx] == False:
-            rospy.loginfo('Received replanning check request for agent %d, its new average velocity is %f' % (req.index, req.new_vel))
+            # rospy.loginfo('Received replanning check request for agent %d, its new average velocity is %f' % (req.index, req.new_vel))
 
             self.recal_flags[agent_idx] = True
             self.vels[agent_idx] = new_vel
-            # self.paths_to_pub[agent_idx].start_time = t
-            # self.pos[agent_idx] = pos
             self.agent_block[agent_idx] = block
 
             return ReplanningCheckResponse(True)
         else:
             return ReplanningCheckResponse(False)
-    
-    def get_partial_path(self, agent_idx):
-        # update path
-        pos = copy.deepcopy(self.pos[agent_idx])
-        new_path = []
-        nearest_idx = -1
-        second_nearest_idx = -1
-        min_dist = 1e6
-        for i in range(len(self.paths[agent_idx])):
-            pos_path = np.array(self.paths[agent_idx][i])
-            dist = np.linalg.norm(pos_path - np.array(pos))
-            if dist < min_dist:
-                min_dist = dist
-                second_nearest_idx = nearest_idx
-                nearest_idx = i
-        
-        # rospy.loginfo("Agent "+str(agent_idx)+" min distance before is "+str(min_dist))
-        # print("nearest point: ", self.paths[agent_idx][nearest_idx])
-        if nearest_idx != -1:
-            min_dist = 1e6
-            if second_nearest_idx != -1:
-                # print("Agent "+str(agent_idx)+" second nearest index: "+str(second_nearest_idx))
-                true_nearest_pt = None
-                sec_min_pt = np.array(self.paths[agent_idx][second_nearest_idx])
-                min_pt = np.array(self.paths[agent_idx][nearest_idx])
-                n = 10
-                for i in range(n):
-                    p = sec_min_pt + (min_pt - sec_min_pt) * (i+1) / n
-                    dist = np.linalg.norm(p - np.array(pos))
-                    if dist < min_dist:
-                        min_dist = dist
-                        true_nearest_pt = p.tolist()
-                if true_nearest_pt is not None:
-                    new_path.append(true_nearest_pt)
-                    # print("Agent "+str(agent_idx)+" true nearest point: ", true_nearest_pt)
-            # else:
-            #     print("Agent "+str(agent_idx)+" no second nearest index")
 
-            new_path.extend(copy.deepcopy(self.paths[agent_idx][nearest_idx:]))
-            # rospy.loginfo("Agent "+str(agent_idx)+" min distance after is "+str(min_dist))
-
-        return new_path
 
     def recal_passage_time_map(self):
 
@@ -154,7 +120,6 @@ class HomoCoPathNode:
             if SET.test_mode == 4:
                 if recal_flag:
 
-                    # new_path = self.get_partial_path(agent_idx)
                     path = self.paths[agent_idx]
                     
                     # recalculate passage time map
@@ -166,22 +131,13 @@ class HomoCoPathNode:
                     # update new path time
                     path_time = self.homopathplanner.CalculatePathTime(path, self.vels[agent_idx], self.paths_to_pub[agent_idx].path_time, self.starts[agent_idx])
 
-                    # debug
-                    # passage_idx = 24
-                    # if agent_idx == 6 or agent_idx == 2:
-                    #     print("Agent "+str(agent_idx)+ " Passage " + str(passage_idx) + " time: ")
-                    #     print(new_pptm[passage_idx*2])
-                    #     print(new_pptm[passage_idx*2+1])
-
                     # reevaluate path
                     replan_flag = self.eval_path(agent_idx)
 
                     if replan_flag or self.agent_block[agent_idx]:
-                        # print("Agent "+str(agent_idx)+" recalculated passage time map:")
-                        # print(new_pptm[71])
-                        print("***self velocity changes, replan for agent***")
-                        print("block:" + str(self.agent_block[agent_idx]))
-                        print("replan flag:" + str(replan_flag))
+                        # print("***self velocity changes, replan for agent***")
+                        # print("block:" + str(self.agent_block[agent_idx]))
+                        # print("replan flag:" + str(replan_flag))
                         self.replan(agent_idx)
                     else:
                         self.paths_to_pub[agent_idx].path_time = path_time
@@ -194,7 +150,7 @@ class HomoCoPathNode:
                     # print(self.agent_block[agent_idx])
                     if replan_flag or self.agent_block[agent_idx]:
 
-                        print("***high priority agent replan for agent***")
+                        # print("***high priority agent replan for agent***")
                         self.replan(agent_idx)
 
                 HIGH_PRIORITY_CHANGE = HIGH_PRIORITY_CHANGE or recal_flag
@@ -238,15 +194,6 @@ class HomoCoPathNode:
         
         (path, path_vel, path_time, pptm) = self.homopathplanner.generate_homotopic_path(start, target, agents_passage_passing_time, V, True)
 
-        # if agent_idx == 6:
-        #     print("Agent "+str(agent_idx)+" replan passage time map:")
-        #     print(pptm[24*2])
-        #     print(pptm[24*2+1])
-
-        #     print("Agent 2 passage time map:")
-        #     print(agents_passage_passing_time[0][24*2])
-        #     print(agents_passage_passing_time[0][24*2+1])
-
         path_pub_info = RefPath()
         path_pub_info.start_time = time.time()
         path_pub_info.path_vel = path_vel
@@ -262,7 +209,7 @@ class HomoCoPathNode:
         self.paths[agent_idx] = path
 
         self.paths_pub[agent_idx].publish(path_pub_info)
-        rospy.loginfo('Published path for agent %d, time stamp is %f' % (agent_idx, path_pub_info.start_time))
+        # rospy.loginfo('Published path for agent %d, time stamp is %f' % (agent_idx, path_pub_info.start_time))
 
     def eval_path(self, agent_idx):
 
@@ -294,16 +241,12 @@ class HomoCoPathNode:
 
                         if time_overlap_lower < time_overlap_upper:
                             self_score += 1
-
-                            # print("Agent "+str(agent_idx)+" Passage "+str(j)+" : " + str(self_time_1)+" "+str(self_time_2)+" / "+str(other_time_1)+" "+str(other_time_2))
                         else:
                             self_score += math.exp(self.alpha_eval*abs(time_overlap_upper - time_overlap_lower))
 
-                            # print("Agent "+str(agent_idx)+" Passage "+str(j)+" : " + str(self_time_1)+" "+str(self_time_2)+" / "+str(other_time_1)+" "+str(other_time_2))
-
         if agent_idx not in self.path_pptm_scores:
             self.path_pptm_scores[agent_idx] = self_score
-            print("Agent "+str(agent_idx)+" new score: "+str(self_score))
+            # print("Agent "+str(agent_idx)+" new score: "+str(self_score))
             return False
         else:
             old_score = self.path_pptm_scores[agent_idx]
@@ -314,7 +257,7 @@ class HomoCoPathNode:
             # print("Agent "+str(agent_idx)+" new score: "+str(new_score) + " old score: "+str(old_score))
 
             if new_score > self.score_threshold:
-                print("self score: "+str(new_score))
+                # print("self score: "+str(new_score))
                 return True
             else:
                 return False
@@ -353,18 +296,11 @@ class HomoCoPathNode:
         for idx in self.index_lst:
             start = self.starts[idx]
             target = self.targets[idx]
-            V = 0.5
+            V = self.aver_vel
         
             (path, path_vel, path_time, pptm) = self.homopathplanner.generate_homotopic_path(start, target, agents_passage_passing_time, V, False)
 
             agents_passage_passing_time.append(pptm)
-
-            # debug
-            # passage_idx = 55
-            # if idx == 8 or idx == 4:
-            #     print("Agent "+str(idx)+ " Passage " + str(passage_idx) + " time: ")
-            #     print(pptm[passage_idx*2])
-            #     print(pptm[passage_idx*2+1])
 
             path_pub_info = RefPath()
             path_pub_info.path_vel = path_vel
@@ -381,7 +317,7 @@ class HomoCoPathNode:
             # record path
             self.paths[idx] = path
         
-        rospy.loginfo('Homotopic Path Planning time: %f' % (time.time() - start_time))
+        # rospy.loginfo('Homotopic Path Planning time: %f' % (time.time() - start_time))
 
         path_time_stamp = time.time()
         self.start_planning_time = path_time_stamp
@@ -390,7 +326,7 @@ class HomoCoPathNode:
             path.start_time = path_time_stamp
             self.eval_path(idx)
             self.paths_pub[idx].publish(path)
-            rospy.loginfo('Published path for agent %d, its time stamp is %f' % (idx, path_time_stamp))
+            # rospy.loginfo('Published path for agent %d, its time stamp is %f' % (idx, path_time_stamp))
 
         return StartPlanningResponse(True)
 
@@ -413,21 +349,21 @@ class HomoCoPathNode:
                 index = int(topic[5:])
                 if index not in self.targets_sub:
                     self.targets_sub[index] = rospy.Subscriber(topic, PoseStamped, self.get_target_callback, callback_args=index, queue_size=10)
-                    rospy.loginfo('Subscribed to target for agent %d' % index)
+                    # rospy.loginfo('Subscribed to target for agent %d' % index)
             
             if len(topic) > 5 and topic[0:5] == '/Traj':
                 # subscribe to agent's trajectory
                 index = int(topic[5:])
                 if index not in self.trajs_sub:
                     self.trajs_sub[index] = rospy.Subscriber(topic, ExecuteTraj, self.get_start_callback, callback_args=index, queue_size=10)
-                    rospy.loginfo('Subscribed to trajectory for agent %d' % index)
+                    # rospy.loginfo('Subscribed to trajectory for agent %d' % index)
                 
             if len(topic) > 10 and topic[0:10] == '/past_traj': 
                 # subscribe to agent's past trajectory
                 index = int(topic[10:])
                 if index not in self.past_trajs_sub:
                     self.past_trajs_sub[index] = rospy.Subscriber(topic, Path, self.get_past_traj, callback_args=index, queue_size=10)
-                    rospy.loginfo('Subscribed to past trajectory for agent %d' % index)
+                    # rospy.loginfo('Subscribed to past trajectory for agent %d' % index)
             
             if index != -1 and index not in self.paths_pub:
                 self.paths_pub[index] = rospy.Publisher('/Path'+str(index), RefPath, queue_size=1)

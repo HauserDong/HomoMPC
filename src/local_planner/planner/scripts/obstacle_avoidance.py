@@ -1,3 +1,11 @@
+################################################################
+# 
+# Author: Mike Chen, Hauser Dong
+# From Peking university
+# Last update: 2025.03.03
+# 
+###############################################################
+
 from geometry import *
 from numpy.core.fromnumeric import argmin
 # from plot import *

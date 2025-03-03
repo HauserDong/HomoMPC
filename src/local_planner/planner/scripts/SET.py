@@ -1,30 +1,15 @@
 ################################################################
 # 
-# Author: Mike Chen 
+# Author: Hauser Dong
 # From Peking university
-# Last update: 2023.5.26
+# Last update: 2025.03.03
 # 
 ###############################################################
 
 
 import numpy as np
+import rospy
 from geometry import *
-import pickle
-import os
-import sys
-
-'''
-'index': the index of agent
-'K': horizon length
-'h': sampling time interval
-'t_w': waiting time
-'t_c': computation time
-'type': agent type, for type can be found at 'src/planner/scripts/Dynamic'
-'state': intial state
-'tar': target state'radius': radius of the agent
-'radius': radius of the agent
-'com_radius': communication radius
-'''
 
 '''
 test_mode:
@@ -34,16 +19,9 @@ test_mode:
     3: pure replanning
     4: homotopy-aware optimal path planning
 '''
-test_mode = 4
+test_mode = rospy.get_param('test_mode', default=4)
 
-replanning = False   # for test_mode = 0
-
-global agent_list
-
-com_r = 20.0
-
-t_w = 0.20
-t_c = 0.10
+replanning = True   # for test_mode = 0
 
 rgb_color_list = [
     [237/255, 27/255, 52/255],      # red
@@ -56,8 +34,24 @@ rgb_color_list = [
     [236/255, 143/255, 156/255],    # Salmon
 ]
 
+'''
+'index': the index of agent (start from 0)
+'K': horizon length
+'h': sampling time interval
+'t_w': waiting time (set as constant in this work)
+'t_c': computation time (set as constant in this work)
+'type': agent type, for type can be found at 'src/planner/scripts/Dynamic' (not used in this work)
+'state': initial state
+'tar': target state
+'radius': radius of the agent
+'com_radius': communication radius (set as a huge constant in this work)
+'''
+t_w = 0.20
+t_c = 0.10
+com_r = 20.0
 radius = 0.2
 
+global agent_list
 agent_list = [
 
     {
@@ -169,7 +163,7 @@ agent_list = [
 # Obstacle Construction
 
 global map_range
-map_range={'x':[0.0, 5.0],'y':[0.0, 4.5]}     # range of the map
+map_range={'x':[0.0, 5.0],'y':[0.0, 5.0]}     # range of the map
 
 # discretization resolution
 global resolution
@@ -177,12 +171,18 @@ resolution=0.1
 
 ini_obstacle_list=[
     [   
-        polygon([np.array([1.5, 1.4]),np.array([1.8, 1.4]),np.array([1.8, 2.0]), np.array([1.5, 2.0])]),
-        polygon([np.array([1.5,2.6]),np.array([1.8,2.6]),np.array([1.8, 3.2]), np.array([1.5, 3.2])]),
-        polygon([np.array([2.5,0.75]),np.array([2.8,0.75]),np.array([2.8, 1.35]), np.array([2.5, 1.35])]),
-        polygon([np.array([2.5,2.0]),np.array([2.8,2.0]),np.array([2.8, 2.6]), np.array([2.5, 2.6])]),
-        polygon([np.array([2.5,3.25]),np.array([2.8,3.25]),np.array([2.8, 3.85]), np.array([2.5, 3.85])]),
-        polygon([np.array([3.5,1.4]),np.array([3.8,1.4]),np.array([3.8, 2.0]), np.array([3.5, 2.0])]),
-        polygon([np.array([3.5,2.6]),np.array([3.8,2.6]),np.array([3.8, 3.2]), np.array([3.5, 3.2])]),
+        polygon([np.array([1.5, 0.8]),np.array([1.8, 0.8]),np.array([1.8, 1.2]), np.array([1.5, 1.2])]),
+        polygon([np.array([1.5, 1.8]),np.array([1.8, 1.8]),np.array([1.8, 2.2]), np.array([1.5, 2.2])]),
+        polygon([np.array([1.5, 2.8]),np.array([1.8, 2.8]),np.array([1.8, 3.2]), np.array([1.5, 3.2])]),
+        polygon([np.array([1.5, 3.8]),np.array([1.8, 3.8]),np.array([1.8, 4.2]), np.array([1.5, 4.2])]),
+        polygon([np.array([2.5,0.3]),np.array([2.8,0.3]),np.array([2.8, 0.7]), np.array([2.5, 0.7])]),
+        polygon([np.array([2.5,1.3]),np.array([2.8,1.3]),np.array([2.8, 1.7]), np.array([2.5, 1.7])]),
+        polygon([np.array([2.5,2.3]),np.array([2.8,2.3]),np.array([2.8, 2.7]), np.array([2.5, 2.7])]),
+        polygon([np.array([2.5,3.3]),np.array([2.8,3.3]),np.array([2.8, 3.7]), np.array([2.5, 3.7])]),
+        polygon([np.array([2.5,4.3]),np.array([2.8,4.3]),np.array([2.8, 4.7]), np.array([2.5, 4.7])]),
+        polygon([np.array([3.5, 0.8]),np.array([3.8, 0.8]),np.array([3.8, 1.2]), np.array([3.5, 1.2])]),
+        polygon([np.array([3.5, 1.8]),np.array([3.8, 1.8]),np.array([3.8, 2.2]), np.array([3.5, 2.2])]),
+        polygon([np.array([3.5, 2.8]),np.array([3.8, 2.8]),np.array([3.8, 3.2]), np.array([3.5, 3.2])]),
+        polygon([np.array([3.5, 3.8]),np.array([3.8, 3.8]),np.array([3.8, 4.2]), np.array([3.5, 4.2])]),
     ] 
 ]

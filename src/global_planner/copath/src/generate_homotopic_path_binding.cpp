@@ -1,8 +1,8 @@
 /**
  * Modified by: Hauser Dong
  * From Peking university
- * Last update: 2024.10.23
- * Brief Intro: This file is about homotopic path planning, 
+ * Last update: 2025.03.03
+ * Brief Intro: This file is about homotopy-aware path planning, 
  *              partly modified from https://github.com/HuangJingGitHub/HPSP
  *              and https://github.com/SimoneTinella/Path-Planning-Robot-over-Voronoi-Diagram.
 */
@@ -239,6 +239,8 @@ class HomoPathPlanner {
         bool visualize_;
         float Vmax;     // used to evaluate the time to reach each passages
         float alpha_; // used to evaluate the difference of the time to reach each passages
+        float min_width_weight_;
+        float homotopy_weight_;
         vector<PosNode*> tmp;
         int test_mode_;
         Voronoi voronoi_;
@@ -250,7 +252,7 @@ class HomoPathPlanner {
         ros::ServiceClient voronoi_client;
 
     public:
-        HomoPathPlanner(int agent_idx, py::list obstacles, py::dict map_range, float resolution, int test_mode, float alpha = -0.1, bool visualize = true);
+        HomoPathPlanner(int agent_idx, py::list obstacles, py::dict map_range, float resolution, int test_mode, float alpha = -0.1, bool visualize = true, float min_width_weight = 0.0, float homotopy_weight = 0.0);
 
         vector<vector<pair<float, float>>> GetExtendedVisibilityCheck();
 
@@ -314,22 +316,10 @@ visualization_msgs::Marker create_line_marker(const geometry_msgs::Point& start,
     return marker;
 }
 
-HomoPathPlanner::HomoPathPlanner(int agent_idx, py::list obstacles, py::dict map_range, float resolution, int test_mode, float alpha, bool visualize): agent_idx_(agent_idx), resolution_(resolution), test_mode_(test_mode), alpha_(alpha), visualize_(visualize){
-    /*
-    INPUTS:
-    obstacles: list of obstacles, each obstacle is a list of vertices
-    map_range: dictionary containing the range of the map in x and y axes
-    resolution: resolution of the map
-    test_mode:
-        0: single path planning
-        1: homo-path planning (no restriction on passage)
-        2: homo-path planning (pass as much passages as possible; do not consider others' results)
-        3: homo-path planning (pass as much passages as possible; consider others' results; penalty on other homo-path passing passages)
-        4: homo-path planning (pass as much passages as possible; consider others' results; penalty on other homo-path passing passages with time-stamp)
-    visualize: whether to visualize the homotopic paths by opencv
-    */
+HomoPathPlanner::HomoPathPlanner(int agent_idx, py::list obstacles, py::dict map_range, float resolution, int test_mode, float alpha, bool visualize, float min_width_weight, float homotopy_weight): agent_idx_(agent_idx), resolution_(resolution), test_mode_(test_mode), alpha_(alpha), visualize_(visualize), min_width_weight_(min_width_weight), homotopy_weight_(homotopy_weight)
+{
 
-   Vmax = 0.6/resolution_;  // how many pixels per second
+   Vmax = 0.5/resolution_;  // how many pixels per second
 
    // checking map range
     for (auto item : map_range){
@@ -615,18 +605,6 @@ tuple<vector<vector<float>>, vector<float>, vector<float> , vector<float>> HomoP
     change back to meters when returning the path
     */
 
-    /*
-    INPUTS:
-    start_py: start point of the path
-    end_py: end point of the path
-    other_passage_passing_time: others passage passing time stamps
-
-    OUTPUTS:
-    a pair containing: 1. the index of path chosen 2. the homotopic paths set
-    */
-
-    // Convert other agents' paths set [from meters to pixels]
-    // vector<vector<vector<vector<float>>>> other_path_set_cpp = convert_other_path_set(other_path_set, resolution_);
     vector<vector<double>> other_passage_passing_time_cpp;
 
     // vector<unordered_map<int,float>> passage_time_map_other;
@@ -658,8 +636,6 @@ tuple<vector<vector<float>>, vector<float>, vector<float> , vector<float>> HomoP
     int path_num = 0;
     int success_path_num = 0;
 
-    // vector<vector<vector<float>>> path_set_meter;
-    // vector<vector<PosNode*>> path_set_pixel;
     vector<PosNode*> path;
     vector<vector<float>> path_to_return;
     vector<float> path_vel;
@@ -707,44 +683,13 @@ tuple<vector<vector<float>>, vector<float>, vector<float> , vector<float>> HomoP
         // homotopic paths set
         vector<PolygonObstacle> obs_vec_tmp(obs_vec_);
 
-        // Search point near start
-        // vector<PosNode*> intermediate_targets;
-        // vector<PosNode*> no_access_corridor;
-
-        // NearPassageFinder finder(voronoi_graph_, extended_visibility_check_res_, resolution_);
-
-        // auto start_node = new PosNode(start);
-        // tmp.push_back(start_node);
-        // finder.FindNearPassages(start_node);
-        // intermediate_targets = finder.GetIntermediateTargets();
-        // cout << "intermediate_targets size: " << intermediate_targets.size() << endl;
-        // for (PosNode* intermediate_target: intermediate_targets){
-        //     if (intermediate_target == nullptr) {
-        //         cout << "Intermediate target is nullptr\n";
-        //         continue;
-        //     }
-        //     if (intermediate_target->passage_parent == nullptr){
-        //         cout << "No passage parent\n";
-        //         continue;
-        //     }
-
-        //     intermediate_target->passage_parent->closed = true;
-            
-        //     no_access_corridor.push_back(intermediate_target->passage_parent);
-            
-        // }
-
         auto start_ = new PosNode(start);
         tmp.push_back(start_);
         auto end_ = new PosNode(end);
         tmp.push_back(end_);
 
-        AStarPlanner planner(voronoi_graph_, passage_kd_tree_, obs_kd_tree_, obs_vec_, extended_visibility_check_res_, extended_visibility_check_whole_passage_, other_passage_passing_time_cpp, test_mode_, resolution_, alpha_, V, replan);
-        // if (replan){
-        //     AStarPlanner planner(voronoi_graph_, passage_kd_tree_, obs_kd_tree_, obs_vec_, extended_visibility_check_res_, extended_visibility_check_whole_passage_, other_passage_passing_time_cpp, test_mode_, resolution_, alpha_, V, replan, 2000.0);
-        // }
+        AStarPlanner planner(voronoi_graph_, passage_kd_tree_, obs_kd_tree_, obs_vec_, extended_visibility_check_res_, extended_visibility_check_whole_passage_, other_passage_passing_time_cpp, test_mode_, resolution_, alpha_, V, replan, homotopy_weight_, min_width_weight_);
         
-
         bool success = planner.Plan(start_, end_);
 
         if (success){
@@ -768,50 +713,12 @@ tuple<vector<vector<float>>, vector<float>, vector<float> , vector<float>> HomoP
         }
 
         restart_voronoi_graph();
-        
-    //     if (!path_set_found){
-    //         AStarPlanner planner(voronoi_graph_, passage_kd_tree_, obs_kd_tree_, obs_vec_, extended_visibility_check_res_, passage_time_map_other, resolution_, alpha_, V, 0.0, 0.0, 0.0);
-            
-    //         auto start_ = new PosNode(start);
-    //         tmp.push_back(start_);
-    //         auto end_ = new PosNode(end);
-    //         tmp.push_back(end_);
 
-    //         bool success = planner.Plan(start_, end_);
-
-    //         if(success){
-    //             vector<PosNode*> path = planner.GetPath();
-
-    //             float res = 0.1/resolution_;
-    //             DiminishPath(path, res);
-                
-    //             if (visualize_){
-    //                 DrawPath(back_img_, path, Scalar(0, 255, 0));
-    //             }
-                
-    //             success_path_num++;
-                
-    //             vector<vector<float>> path_to_return;
-    //             convert_path_format(path, path_to_return, path_vel resolution_);
-    //             path_set_meter.push_back(path_to_return);
-    //             path_set_pixel.push_back(path);
-    //         }
-
-    //         restart_voronoi_graph();
-    //     }
-
-    //     for (auto node: no_access_corridor){
-    //         node->closed = false;
-    //     }
     }
 
     auto end_time_path = chrono::system_clock::now();
     chrono::duration<double> elapsed_seconds_path = end_time_path - start_time_path;
     cout << "Passage-aware Homotopic Paths Generation Time: " << elapsed_seconds_path.count() << "s\n";
-    // cout << "Path number: " << path_num << '\n';
-    // cout << "Successful path number: " << success_path_num << '\n';
-    // if(path_num > 0)
-    //     cout << "Average time for each path: " << elapsed_seconds_path.count() / path_num << "s\n";
 
     if (visualize_){
         circle(back_img_, convert_opencv_point(start), 4, cv::viz::Color::black(), FILLED);
@@ -959,7 +866,7 @@ void HomoPathPlanner::restart_voronoi_graph(){
 
 PYBIND11_MODULE(generate_homotopic_path, m) {
     py::class_<HomoPathPlanner>(m, "HomoPathPlanner")
-        .def(py::init<int, py::list, py::dict, float, int, float, bool>())
+        .def(py::init<int, py::list, py::dict, float, int, float, bool, float, float>())
         .def("generate_homotopic_path", &HomoPathPlanner::generate_homotopic_path, "A function that generates homotopic paths", py::arg("start"), py::arg("end"), py::arg("other_passage_passing_time"), py::arg("V_aver"),py::arg("replan"))
         .def("GetExtendedVisibilityCheck", &HomoPathPlanner::GetExtendedVisibilityCheck, "A function that returns the extended visibility check result")
         .def("CalculatePassageTimeMap", &HomoPathPlanner::CalculatePassageTimeMap, "A function that calculate passage time map", py::arg("path"), py::arg("v"),  py::arg("pptm_old"), py::arg("pos"))

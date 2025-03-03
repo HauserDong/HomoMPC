@@ -1,7 +1,5 @@
 int32 index
 float32 new_vel
-float64 time
-PathPoint pos
 bool block
 ---
 bool success

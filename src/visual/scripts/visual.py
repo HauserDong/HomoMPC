@@ -1,4 +1,13 @@
 #!/usr/bin/env
+
+################################################################
+# 
+# Author: Mike Chen, Hauser Dong
+# From Peking university
+# Last update: 2025.03.03
+# 
+###############################################################
+
 import rospy 
 from bring_up.msg import  ExecuteTraj
 from visualization_msgs.msg import Marker
@@ -8,9 +17,6 @@ import numpy as np
 import time
 import os
 import sys
-# sys.path.append('../../planner/scripts')
-# sys.path.append(os.path.abspath('.')+'/src/planner/scripts')
-# print(sys.path)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_dir, '../../local_planner/planner/scripts'))
@@ -79,26 +85,7 @@ class object():
 
             self.type=self.traj.type
 
-            if self.type=='Markanem':
-                self.vis=Markanem()
-            elif self.type=='Porsche':
-                self.vis=Porsche()
-            elif self.type=='Walle':
-                self.vis=Walle()
-            elif self.type=='Mini_4wd':
-                self.vis=Mini_4wd()
-            elif self.type=='Mini_mec':
-                self.vis=Mini_mec(self.index)
-            elif self.type=='Mini_om':
-                self.vis=Mini_om()
-            elif self.type=='Mini_ack':
-                self.vis=Mini_ack()
-            elif self.type=='Mini_tank':
-                self.vis=Mini_tank()
-            elif self.type=='Formula1':
-                self.vis=Formula1()
-            else:
-                raise Exception('The type '+self.type+' does not exist.')
+            self.vis=Mini_mec(self.index)
 
         self.traj=traj
 
@@ -185,309 +172,18 @@ class object():
         self.ref_traj_pub.publish(self.ref_traj)
         
 
-class Walle():
-
-    def __init__(self) -> None:
-        
-        # self.position_pub=rospy.Publisher('vis_walle',Marker,queue_size=10)
-
-        self.vis_position=Marker()
-
-        self.vis_position.color.r=203/255
-        self.vis_position.color.g=133/255
-        self.vis_position.color.b=63/255
-        self.vis_position.color.a=1.0
-
-        self.vis_position.header.frame_id="map"
-
-        self.vis_position.type=Marker.MESH_RESOURCE
-
-        self.vis_position.mesh_resource="package://visual/3Dmodel/walle.stl" 
-
-        # self.vis_position.action=Marker.ADD   
-
-        self.vis_position.pose.position.x=0.0
-        self.vis_position.pose.position.y=0.0
-        self.vis_position.pose.position.z=0.0 
-
-        self.vis_position.scale.x=1e-2
-        self.vis_position.scale.y=1e-2
-        self.vis_position.scale.z=1e-2
-
-        self.vis_position.pose.orientation.x = 0.0
-        self.vis_position.pose.orientation.y = 0.0
-        self.vis_position.pose.orientation.z = 0.0
-        self.vis_position.pose.orientation.w = 1.0
-
-        self.vis_position.lifetime=rospy.Duration(1.0)
-
-    def update(self,p,theta):
-
-        pose=self.vis_position.pose
-        pose.position.x=p[0]
-        pose.position.y=p[1]
-        pose.position.z=p[2]
-        pose.orientation.x=0.0
-        pose.orientation.y=0.0    
-        pose.orientation.z=np.sin(theta/2)
-        pose.orientation.w=np.cos(theta/2)
-
-class Mini_4wd():
-
-    def __init__(self) -> None:
-        
-        # self.position_pub=rospy.Publisher('vis_walle',Marker,queue_size=10)
-
-        self.vis_position=Marker()
-
-        self.vis_position.color.r=192/255
-        self.vis_position.color.g=192/255
-        self.vis_position.color.b=192/255
-        self.vis_position.color.a=1.0
-
-        self.vis_position.header.frame_id="map"
-
-        self.vis_position.type=Marker.MESH_RESOURCE
-
-        self.vis_position.mesh_resource="package://visual/3Dmodel/mini_4wd.stl" 
-
-        # self.vis_position.action=Marker.ADD   
-
-        self.vis_position.pose.position.x=0.0
-        self.vis_position.pose.position.y=0.0
-        self.vis_position.pose.position.z=0.0 
-
-        self.vis_position.scale.x=1e-3
-        self.vis_position.scale.y=1e-3
-        self.vis_position.scale.z=1e-3
-
-        self.vis_position.pose.orientation.x = 0.0
-        self.vis_position.pose.orientation.y = 0.0
-        self.vis_position.pose.orientation.z = 0.0
-        self.vis_position.pose.orientation.w = 1.0
-
-        self.vis_position.lifetime=rospy.Duration(1.0)
-
-    def update(self,p,theta):
-
-        pose=self.vis_position.pose
-        pose.position.x=p[0]
-        pose.position.y=p[1]
-        pose.position.z=p[2]
-        pose.orientation.x=0.0
-        pose.orientation.y=0.0    
-        pose.orientation.z=np.sin(theta/2)
-        pose.orientation.w=np.cos(theta/2)
-
-class Mini_om():
-
-    def __init__(self) -> None:
-        
-        # self.position_pub=rospy.Publisher('vis_walle',Marker,queue_size=10)
-
-        self.vis_position=Marker()
-
-        self.vis_position.color.r=192/255
-        self.vis_position.color.g=192/255
-        self.vis_position.color.b=192/255
-        self.vis_position.color.a=1.0
-
-        self.vis_position.header.frame_id="map"
-
-        self.vis_position.type=Marker.MESH_RESOURCE
-
-        self.vis_position.mesh_resource="package://visual/3Dmodel/mini_om.stl" 
-
-        # self.vis_position.action=Marker.ADD   
-
-        self.vis_position.pose.position.x=0.0
-        self.vis_position.pose.position.y=0.0
-        self.vis_position.pose.position.z=0.0 
-
-        self.vis_position.scale.x=1e-3
-        self.vis_position.scale.y=1e-3
-        self.vis_position.scale.z=1e-3
-
-        self.vis_position.pose.orientation.x = 0.0
-        self.vis_position.pose.orientation.y = 0.0
-        self.vis_position.pose.orientation.z = 0.0
-        self.vis_position.pose.orientation.w = 1.0
-
-        self.vis_position.lifetime=rospy.Duration(1.0)
-
-    def update(self,p,theta):
-
-        pose=self.vis_position.pose
-        pose.position.x=p[0]
-        pose.position.y=p[1]
-        pose.position.z=p[2]
-        pose.orientation.x=0.0
-        pose.orientation.y=0.0    
-        pose.orientation.z=np.sin(theta/2)
-        pose.orientation.w=np.cos(theta/2)
-
-class Porsche():
-
-    def __init__(self) -> None:
-        
-        self.vis_position=Marker()
-
-        self.vis_position.color.r=119/255
-        self.vis_position.color.g=136/255
-        self.vis_position.color.b=136/255
-        self.vis_position.color.a=1.0
-
-        self.vis_position.header.frame_id="map"
-
-        self.vis_position.type=Marker.MESH_RESOURCE
-
-        self.vis_position.mesh_resource="package://visual/3Dmodel/911.stl" 
-
-        # self.vis_position.action=Marker.ADD   
-
-        self.vis_position.pose.position.x=0.0
-        self.vis_position.pose.position.y=0.0
-        self.vis_position.pose.position.z=0.0 
-
-        self.vis_position.scale.x=3.2e-2
-        self.vis_position.scale.y=3.2e-2
-        self.vis_position.scale.z=3.2e-2
-
-        self.vis_position.pose.orientation.x = 0.0
-        self.vis_position.pose.orientation.y = 0.0
-        self.vis_position.pose.orientation.z = 0.0
-        self.vis_position.pose.orientation.w = 1.0
-
-        self.vis_position.lifetime=rospy.Duration(1.0)
-
-    def update(self,p,theta):
-
-        pose=self.vis_position.pose
-        pose.position.x=p[0]+0.05*np.sin(theta)
-        pose.position.y=p[1]-0.05*np.cos(theta)
-        pose.position.z=p[2]
-        pose.orientation.x=0.0
-        pose.orientation.y=0.0    
-        pose.orientation.z=np.sin(theta/2)
-        pose.orientation.w=np.cos(theta/2)
-
-class Formula1():
-
-    def __init__(self) -> None:
-        
-        # self.position_pub=rospy.Publisher('vis_formula',Marker,queue_size=10)
-
-        self.vis_position=Marker()
-
-        self.vis_position.color.r=150/255
-        self.vis_position.color.b=205/255
-        self.vis_position.color.g=205/255
-        self.vis_position.color.a=1.0
-
-        self.vis_position.header.frame_id="map"
-
-        self.vis_position.type=Marker.MESH_RESOURCE
-
-        self.vis_position.mesh_resource="package://visual/3Dmodel/f175.stl" 
-
-        # self.vis_position.action=Marker.ADD   
-
-        self.vis_position.pose.position.x=0
-        self.vis_position.pose.position.y=0
-        self.vis_position.pose.position.z=0.0 
-
-        self.vis_position.scale.x=3e-2
-        self.vis_position.scale.y=3e-2
-        self.vis_position.scale.z=3e-2
-
-        self.vis_position.pose.orientation.x = 0.0
-        self.vis_position.pose.orientation.y = 0.0
-        self.vis_position.pose.orientation.z = 0.0
-        self.vis_position.pose.orientation.w = 1.0
-
-        self.vis_position.lifetime=rospy.Duration(1.0)
-
-    def update(self,p,theta):
-
-        pose=self.vis_position.pose
-        pose.position.x=p[0]+0.05*np.sin(theta)
-        pose.position.y=p[1]-0.05*np.cos(theta)
-        pose.position.z=p[2]
-        pose.orientation.x=0.0
-        pose.orientation.y=0.0    
-        pose.orientation.z=np.sin(theta/2)
-        pose.orientation.w=np.cos(theta/2)
-
-class Markanem():
-
-    def __init__(self) -> None:
-        
-        # self.position_pub=rospy.Publisher('vis_markanem',Marker,queue_size=10)
-
-        self.vis_position=Marker()
-
-        self.vis_position.color.r=255/255
-        self.vis_position.color.b=255/255
-        self.vis_position.color.g=204/255
-        self.vis_position.color.a=1.0
-
-        self.vis_position.header.frame_id="map"
-
-        self.vis_position.type=Marker.MESH_RESOURCE
-
-        self.vis_position.mesh_resource="package://visual/3Dmodel/part.stl" 
-
-        # self.vis_position.action=Marker.ADD   
-
-        self.vis_position.pose.position.x=0
-        self.vis_position.pose.position.y=0
-        self.vis_position.pose.position.z=0.0 
-
-        self.vis_position.scale.x=1e-3
-        self.vis_position.scale.y=1e-3
-        self.vis_position.scale.z=1e-3
-
-        self.vis_position.pose.orientation.x = 0.0
-        self.vis_position.pose.orientation.y = 0.0
-        self.vis_position.pose.orientation.z = 0.0
-        self.vis_position.pose.orientation.w = 1.0
-
-        self.vis_position.lifetime=rospy.Duration(1.0)
-
-    def update(self,p,theta):
-
-        pose=self.vis_position.pose
-        pose.position.x=p[0]
-        pose.position.y=p[1]
-        pose.position.z=p[2]
-        pose.orientation.x=0.0
-        pose.orientation.y=0.0    
-        pose.orientation.z=np.sin(theta/2)
-        pose.orientation.w=np.cos(theta/2)
-
 class Mini_mec():
 
     def __init__(self, index) -> None:
-        
-        # self.position_pub=rospy.Publisher('vis_markanem',Marker,queue_size=10)
 
         self.vis_position=Marker()
 
-        # self.vis_position.color.r=153/255
-        # self.vis_position.color.g=153/255
-        # self.vis_position.color.b=255/255
-        # self.vis_position.color.a=1.0
-
-        self.vis_position.color.r=SET.rgb_color_list[int(index)-1][0]
-        self.vis_position.color.g=SET.rgb_color_list[int(index)-1][1]
-        self.vis_position.color.b=SET.rgb_color_list[int(index)-1][2]
+        self.vis_position.color.r=SET.rgb_color_list[int(index)][0]
+        self.vis_position.color.g=SET.rgb_color_list[int(index)][1]
+        self.vis_position.color.b=SET.rgb_color_list[int(index)][2]
         self.vis_position.color.a=0.95
 
-        self.vis_position.header.frame_id="map"
-
-        # self.vis_position.type=Marker.MESH_RESOURCE
-
-        # self.vis_position.mesh_resource="package://visual/3Dmodel/mini_mec.stl" 
+        self.vis_position.header.frame_id="map" 
 
         self.vis_position.type=Marker.SPHERE
 
@@ -497,13 +193,9 @@ class Mini_mec():
         self.vis_position.pose.position.y=0
         self.vis_position.pose.position.z=0.0 
 
-        # self.vis_position.scale.x=1.2e-3
-        # self.vis_position.scale.y=1.2e-3
-        # self.vis_position.scale.z=1.2e-3
-
-        self.vis_position.scale.x=SET.agent_list[int(index)-1]['radius'][0]*2
-        self.vis_position.scale.y=SET.agent_list[int(index)-1]['radius'][0]*2
-        self.vis_position.scale.z=SET.agent_list[int(index)-1]['radius'][0]*2
+        self.vis_position.scale.x=SET.agent_list[int(index)]['radius'][0]*2
+        self.vis_position.scale.y=SET.agent_list[int(index)]['radius'][0]*2
+        self.vis_position.scale.z=SET.agent_list[int(index)]['radius'][0]*2
 
         self.vis_position.pose.orientation.x = 0.0
         self.vis_position.pose.orientation.y = 0.0
@@ -522,216 +214,6 @@ class Mini_mec():
         pose.orientation.y=0.0    
         pose.orientation.z=np.sin(theta/2)
         pose.orientation.w=np.cos(theta/2)
-
-class Mini_ack():
-
-    def __init__(self) -> None:
-        
-        # self.position_pub=rospy.Publisher('vis_markanem',Marker,queue_size=10)
-
-        self.vis_position=Marker()
-
-        self.vis_position.color.r=192/255
-        self.vis_position.color.g=192/255
-        self.vis_position.color.b=192/255
-        self.vis_position.color.a=1.0
-
-        self.vis_position.header.frame_id="map"
-
-        self.vis_position.type=Marker.MESH_RESOURCE
-
-        self.vis_position.mesh_resource="package://visual/3Dmodel/mini_ack.stl" 
-
-        # self.vis_position.action=Marker.ADD   
-
-        self.vis_position.pose.position.x=0
-        self.vis_position.pose.position.y=0
-        self.vis_position.pose.position.z=0.0 
-
-        self.vis_position.scale.x=1e-3
-        self.vis_position.scale.y=1e-3
-        self.vis_position.scale.z=1e-3
-
-        self.vis_position.pose.orientation.x = 0.0
-        self.vis_position.pose.orientation.y = 0.0
-        self.vis_position.pose.orientation.z = 0.0
-        self.vis_position.pose.orientation.w = 1.0
-
-        self.vis_position.lifetime=rospy.Duration(1.0)
-
-    def update(self,p,theta):
-
-        pose=self.vis_position.pose
-        pose.position.x=p[0]
-        pose.position.y=p[1]
-        pose.position.z=p[2]
-        pose.orientation.x=0.0
-        pose.orientation.y=0.0    
-        pose.orientation.z=np.sin(theta/2)
-        pose.orientation.w=np.cos(theta/2)
-
-
-class Mini_tank():
-
-    def __init__(self) -> None:
-        
-        # self.position_pub=rospy.Publisher('vis_markanem',Marker,queue_size=10)
-
-        self.vis_position=Marker()
-
-        self.vis_position.color.r=192/255
-        self.vis_position.color.g=192/255
-        self.vis_position.color.b=192/255
-        self.vis_position.color.a=1.0
-
-        self.vis_position.header.frame_id="map"
-
-        self.vis_position.type=Marker.MESH_RESOURCE
-
-        self.vis_position.mesh_resource="package://visual/3Dmodel/mini_tank.stl" 
-
-        # self.vis_position.action=Marker.ADD   
-
-        self.vis_position.pose.position.x=0
-        self.vis_position.pose.position.y=0
-        self.vis_position.pose.position.z=0.0 
-
-        self.vis_position.scale.x=1e-3
-        self.vis_position.scale.y=1e-3
-        self.vis_position.scale.z=1e-3
-
-        self.vis_position.pose.orientation.x = 0.0
-        self.vis_position.pose.orientation.y = 0.0
-        self.vis_position.pose.orientation.z = 0.0
-        self.vis_position.pose.orientation.w = 1.0
-
-        self.vis_position.lifetime=rospy.Duration(1.0)
-
-    def update(self,p,theta):
-
-        pose=self.vis_position.pose
-        pose.position.x=p[0]
-        pose.position.y=p[1]
-        pose.position.z=p[2]
-        pose.orientation.x=0.0
-        pose.orientation.y=0.0    
-        pose.orientation.z=np.sin(theta/2)
-        pose.orientation.w=np.cos(theta/2)
-
-
-class Drone():
-
-    def __init__(self) -> None:
-        
-        # self.position_pub=rospy.Publisher('vis_drone',Marker,queue_size=10)
-
-        self.vis_position=Marker()
-
-        self.vis_position.color.r=150/255
-        self.vis_position.color.b=205/255
-        self.vis_position.color.g=205/255
-        self.vis_position.color.a=1.0
-
-        self.vis_position.header.frame_id="map"
-
-        self.vis_position.type=Marker.MESH_RESOURCE
-
-        self.vis_position.mesh_resource="package://visual/3Dmodel/drone.stl" 
-
-        # self.vis_position.action=Marker.ADD   
-
-        self.vis_position.pose.position.x=0.0
-        self.vis_position.pose.position.y=0.0
-        self.vis_position.pose.position.z=0.0
-
-        self.vis_position.scale.x=0.2e-2
-        self.vis_position.scale.y=0.2e-2
-        self.vis_position.scale.z=0.2e-2
-
-        self.vis_position.pose.orientation.x = 0.0
-        self.vis_position.pose.orientation.y = 0.0
-        self.vis_position.pose.orientation.z = 0.0
-        self.vis_position.pose.orientation.w = 1.0
-
-        self.vis_position.lifetime=rospy.Duration(1.0)
-
-class F22():
-
-    def __init__(self) -> None:
-        
-        # self.position_pub=rospy.Publisher('vis_F22',Marker,queue_size=10)
-
-        self.vis_position=Marker()
-
-        self.vis_position.color.r=220/255
-        self.vis_position.color.b=220/255
-        self.vis_position.color.g=220/255
-        self.vis_position.color.a=1.0
-
-        self.vis_position.header.frame_id="map"
-
-        self.vis_position.type=Marker.MESH_RESOURCE
-
-        self.vis_position.mesh_resource="package://visual/3Dmodel/F22.stl" 
-
-        # self.vis_position.action=Marker.ADD   
-
-        self.vis_position.pose.position.x=0.0
-        self.vis_position.pose.position.y=0.0
-        self.vis_position.pose.position.z=0.0
-
-        self.vis_position.scale.x=1e-1
-        self.vis_position.scale.y=1e-1
-        self.vis_position.scale.z=1e-1
-
-        self.vis_position.pose.orientation.x = 0.0
-        self.vis_position.pose.orientation.y = 0.0
-        self.vis_position.pose.orientation.z = 0.0
-        self.vis_position.pose.orientation.w = 1.0
-
-        self.vis_position.lifetime=rospy.Duration(1.0)
-
-# class obstacle_object():
-#     # construct obstacle in rviz by using PolygonStamped class (deprecated on Feb 23, 2024)
-    
-#     def __init__(self,idx,obstacle,height,obs_idx) -> None:
-#         self.index = idx
-#         self.height = height
-#         self.obs_pub = rospy.Publisher("obs_vis"+str(self.index)+'_'+str(obs_idx),PolygonStamped,queue_size=1)
-#         self.vertex_list = obstacle.vertex_list
-        
-#         # self.vertex_list.append(self.vertex_list[0])     # make sure the line segment connect to the first point
-    
-#     def publish(self) -> None:
-#         marker = PolygonStamped()
-#         marker.header.frame_id = "map"
-#         marker.header.stamp = rospy.Time.now()
-        
-#         # marker.pose.position.x = 0
-#         # marker.pose.position.y = 0
-#         # marker.pose.position.z = 0
-#         # marker.pose.orientation.x = 0.0
-#         # marker.pose.orientation.y = 0.0
-#         # marker.pose.orientation.z = 0.0
-#         # marker.pose.orientation.w = 1.0
-
-#         # marker.scale.x = 0.1    # the width of the line
-
-#         # marker.color.a = 1.0
-#         # marker.color.r = 0.133
-#         # marker.color.g = 0.545
-#         # marker.color.b = 0.133
-
-#         # marker.lifetime=rospy.Duration(1.0)
-
-#         for p in self.vertex_list:
-#             point = Point32()
-#             point.x = p[0]
-#             point.y = p[1]
-#             point.z = self.height
-#             marker.polygon.points.append(point)
-        
-#         self.obs_pub.publish(marker)
 
 
 
@@ -766,21 +248,6 @@ class rviz_pub():
             ob.publish()
 
         time.sleep(0.08)
-
-    # def obs_vis(self) -> None:
-    #     # present obstacle in rviz (deprecated on Feb 23, 2024)
-    #     # rospy.loginfo("hello, in obs_vis")
-    #     for (idx,ob) in enumerate(SET.ini_obstacle_list):
-    #         height = 0.25
-    #         step = 0.025
-    #         for (obs_idx,h) in enumerate(np.arange(0.0,height,step)):
-    #             self.obs_list+=[obstacle_object(idx,ob,h,obs_idx)]
-
-    #     for ob in self.obs_list:
-    #         ob.publish()
-        
-    #     time.sleep(0.08)
-
         
 
 def get_sample(P,h,t):
