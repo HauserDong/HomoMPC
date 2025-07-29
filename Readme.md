@@ -1,9 +1,9 @@
 # Homotopy-aware Multi-agent Navigation via Distributed Model Predictive Control
 
-This repository provides an algorithm implementation of the paper *Homotopy-aware Multi-agent Navigation via Distributed Model Predictive Control*. 
+This repository provides an algorithm implementation of the paper ***Homo**topy-aware Multi-agent Navigation via Distributed **M**odel **P**redictive **C**ontrol*. 
 The details of this work are as follows:
 * **Authors**: Haoze Dong, Meng Guo, Chengyi He and Zhongkui Li
-* **Paper**: to be released
+* **Paper**: This paper has been accepted by [IROS 2025](https://www.iros25.org). See the full length version: [arXiv](https://arxiv.org/abs/2507.19860).
 * **Video**: [YouTube](https://youtu.be/9HCiO9QTpgw)
 
 ## Dependencies Installation
